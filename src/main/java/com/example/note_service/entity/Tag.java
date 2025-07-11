@@ -1,6 +1,7 @@
 package com.example.note_service.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +15,7 @@ public class Tag {
     @Column(unique = true)
     private String name;
     @ManyToMany(mappedBy = "tags")
+    @JsonBackReference("note-tag")
     private Set<Note> notes = new HashSet<>();
 
     public Tag() {

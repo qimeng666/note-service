@@ -47,7 +47,7 @@ public class NoteController {
 
     @GetMapping("/notes")
     public List<Note> byTag(@RequestParam(required = false) String tag) {
-      if(tag != null){
+      if(tag != null && !tag.trim().isEmpty()){
           return noteService.listByTag(tag);
       }
       else{
