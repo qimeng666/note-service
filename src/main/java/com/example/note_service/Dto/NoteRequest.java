@@ -3,7 +3,7 @@ package com.example.note_service.Dto;
 import java.util.Set;
 
 public class NoteRequest {
-    private Long userId; // User ID to associate the note with
+//    private Long userId; // User ID to associate the note with
     private String title;
     private String content;
     private Set<String> tags; // Comma-separated tag names
@@ -23,9 +23,9 @@ public class NoteRequest {
         return this.tags;
     }
 
-    public Long getUserId() {
-        return this.userId;
-    }
+//    public Long getUserId() {
+//        return this.userId;
+//    }
 
     public void setTitle(String title) {
         this.title = title;
@@ -76,7 +76,7 @@ public class NoteRequest {
         return "NoteRequest(title=" + this.getTitle() + ", content=" + this.getContent() + ", tags=" + this.getTags() + ")";
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+//    public void setUserId(Long userId) {
+//        this.userId = userId;
+//    }
 }

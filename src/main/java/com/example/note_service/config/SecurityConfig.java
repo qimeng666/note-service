@@ -2,6 +2,7 @@ package com.example.note_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -12,7 +13,10 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())                  // 关闭 CSRF
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()      // 所有请求都放行
+                        .requestMatchers(HttpMethod.GET, "/notes/**", "/tags/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt()
                 );
         return http.build();
     }

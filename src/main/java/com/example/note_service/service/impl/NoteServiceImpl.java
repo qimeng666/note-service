@@ -51,8 +51,11 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     @Transactional
-    public Note update(Long id, Note note, Set<String> tagNames) {
+    public Note update(Long id, Long userId, Note note, Set<String> tagNames) {
         Note existingNote = getById(id);
+        if (!existingNote.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "不能修改非自己的笔记");
+        }
         existingNote.setTitle(note.getTitle());
         existingNote.setContent(note.getContent());
         if (note.getUserId() != null) {
@@ -77,5 +80,18 @@ public class NoteServiceImpl implements NoteService {
     @Transactional
     public List<Note> listByTag(String tagName) {
         return noteRepository.findByTagsName(tagName);
+    }
+
+    @Override
+    public void deleteForUser(Long noteId, Long userId) {
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Note not found: " + noteId));
+        if(!note.getUserId().equals(userId)){
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "这不是你的笔记");
+        }
+        note.getTags().forEach(tag -> tag.getNotes().remove(note));
+        noteRepository.delete(note);
     }
 }

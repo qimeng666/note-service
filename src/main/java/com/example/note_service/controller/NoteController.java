@@ -6,6 +6,8 @@ import com.example.note_service.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -21,9 +23,10 @@ public class NoteController {
     }
 
     @PostMapping("/notes")
-    public ResponseEntity<Note> create(@RequestBody NoteRequest req) {
-        // Logic to create a note
-        Note created = noteService.create(mapToEntity(req, req.getUserId()), req.getTags());
+    public ResponseEntity<Note> create(@AuthenticationPrincipal Jwt jwt, @RequestBody NoteRequest req) {
+        Long userId = jwt.getClaim("userId");
+
+        Note created = noteService.create(mapToEntity(req, userId), req.getTags());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -36,13 +39,15 @@ public class NoteController {
         return noteService.getById(noteId);
     }
     @PutMapping("/notes/{noteId}")
-    public Note update(@PathVariable Long noteId, @RequestBody NoteRequest req) {
-        return noteService.update(noteId, mapToEntity(req, req.getUserId()), req.getTags());
+    public Note update(@AuthenticationPrincipal Jwt jwt, @PathVariable Long noteId, @RequestBody NoteRequest req) {
+        Long userId = jwt.getClaim("userId");
+        return noteService.update(noteId, userId, mapToEntity(req, userId), req.getTags());
     }
 
     @DeleteMapping("/notes/{noteId}")
-    public void delete(@PathVariable Long noteId) {
-        noteService.delete(noteId);
+    public void delete(@AuthenticationPrincipal Jwt jwt, @PathVariable Long noteId) {
+        Long userId = jwt.getClaim("userId");
+        noteService.deleteForUser(noteId, userId);
     }
 
     @GetMapping("/notes")
@@ -53,6 +58,25 @@ public class NoteController {
       else{
           return Collections.emptyList();
       }
+    }
+    
+    @GetMapping("/debug/jwt")
+    public ResponseEntity<String> debugJwt(@AuthenticationPrincipal Jwt jwt) {
+        StringBuilder response = new StringBuilder();
+        response.append("JWT Subject: ").append(jwt.getSubject()).append("\n");
+        response.append("JWT Issuer: ").append(jwt.getIssuer()).append("\n");
+        response.append("All Claims: ").append(jwt.getClaims()).append("\n");
+        
+        // Try to get user_id from different possible claim names
+        Object user_id = jwt.getClaim("user_id");
+        Object sub = jwt.getClaim("sub");
+        Object userId = jwt.getClaim("userId");
+        
+        response.append("user_id claim: ").append(user_id).append("\n");
+        response.append("sub claim: ").append(sub).append("\n");
+        response.append("userId claim: ").append(userId).append("\n");
+        
+        return ResponseEntity.ok(response.toString());
     }
     private Note mapToEntity(NoteRequest req, Long userId) {
         Note note = new Note();
