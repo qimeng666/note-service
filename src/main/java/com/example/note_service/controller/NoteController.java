@@ -12,14 +12,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import com.example.note_service.Dto.UserDto;
+import com.example.note_service.client.UserClient;
 
 @RestController
 public class NoteController {
 
     private final NoteService noteService;
+    private final UserClient userClient;
 
-    public NoteController(NoteService noteService) {
+    public NoteController(NoteService noteService, UserClient userClient) {
         this.noteService = noteService;
+        this.userClient = userClient;
     }
 
     @PostMapping("/notes")
@@ -78,6 +82,18 @@ public class NoteController {
         
         return ResponseEntity.ok(response.toString());
     }
+    
+    @GetMapping("/debug/user/{userId}")
+    public ResponseEntity<String> debugUser(@PathVariable Long userId) {
+        try {
+            UserDto user = userClient.getById(userId);
+            return ResponseEntity.ok("User found: " + user.toString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error calling user service: " + e.getMessage());
+        }
+    }
+    
     private Note mapToEntity(NoteRequest req, Long userId) {
         Note note = new Note();
         note.setUserId(userId);

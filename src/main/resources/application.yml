@@ -1,7 +1,11 @@
 jwt:
   secret: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
-
+user:
+  service:
+    url: http://localhost:8081
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     url: jdbc:mysql://localhost:3306/notes_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
@@ -24,4 +28,29 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
+    com.example.note_service.client: DEBUG
+    feign: DEBUG
+    feign.Logger: DEBUG
+    feign.codec: DEBUG
+    feign.okhttp: DEBUG
+    org.springframework.cloud.openfeign: DEBUG
+    org.springframework.web.client: DEBUG
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      userService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+  retry:
+    instances:
+      userService:
+        maxAttempts: 5
+        waitDuration: 1s
+        retryExceptions:
+          - feign.RetryableException
+          - org.springframework.web.client.HttpServerErrorException
