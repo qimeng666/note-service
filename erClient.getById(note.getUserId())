@@ -1,0 +1,29 @@
+[33mcommit d95795afb7082b821f892bc0c792945874150ad9[m[33m ([m[1;36mHEAD -> [m[1;32mfeature/notes[m[33m)[m
+Author: qimengchao981 <u1297640@umail.utah.edu>
+Date:   Sun Jul 13 23:50:11 2025 +0800
+
+    set up kafka configration and send message for create and update
+
+[33mcommit 4c8c49be91a603921f5e062d1e397d3c19d7499b[m[33m ([m[1;31morigin/feature/notes[m[33m)[m
+Author: qimengchao981 <u1297640@umail.utah.edu>
+Date:   Sat Jul 12 17:12:11 2025 +0800
+
+    validate user existence via Feign client with Resilience4j
+
+[33mcommit 5daeedd6bdc8d6c995f0eefe87a9d6eaf83111d8[m
+Author: qimengchao981 <u1297640@umail.utah.edu>
+Date:   Sat Jul 12 15:06:44 2025 +0800
+
+    implement JWT verification for protetcted api(create, update and delete)
+
+[33mcommit 08c5cacf0dab5b6073a55006c916db1cf7ccd78e[m
+Author: qimengchao981 <u1297640@umail.utah.edu>
+Date:   Sat Jul 12 01:04:10 2025 +0800
+
+    add basic CRUD function for tags
+
+[33mcommit 6d5769dace6dba5cc9260f2c96657bcd7adaff83[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: qimengchao981 <u1297640@umail.utah.edu>
+Date:   Fri Jul 11 16:04:29 2025 +0800
+
+    add basic CRUD function for notes

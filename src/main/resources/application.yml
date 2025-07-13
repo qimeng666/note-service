@@ -26,8 +26,11 @@ spring:
         jwt:
           jws-algorithms: HS512
   kafka:
+    # 指定 Kafka broker 的地址
     bootstrap-servers: localhost:9092
     producer:
+      #key-serializer：把消息的 key 转成字节，用 StringSerializer
+      #value-serializer：把消息 value 转成字节，用 Spring 自带的 JsonSerializer
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
@@ -35,6 +38,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
+        # JsonDeserializer 在反序列化时，会校验对象所属包， 这里信任所有的包
         spring.json.trusted.packages: '*'
 logging:
   level:
@@ -60,8 +64,8 @@ resilience4j:
   retry:
     instances:
       userService:
-        maxAttempts: 5
-        waitDuration: 1s
+        maxAttempts: 5 # 最大重试次数
+        waitDuration: 1s # 重试间隔时间
         retryExceptions:
           - feign.RetryableException
           - org.springframework.web.client.HttpServerErrorException
