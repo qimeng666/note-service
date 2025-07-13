@@ -1,6 +1,7 @@
 package com.example.note_service.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +22,7 @@ public class Note {
     @JoinTable(name = "note_tag",
             joinColumns = @JoinColumn(name = "note_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JsonManagedReference("note-tag")
     private Set<Tag> tags = new HashSet<>();
 
     public Note() {
