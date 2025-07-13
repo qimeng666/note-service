@@ -1,5 +1,6 @@
 package com.example.note_service.service.impl;
 
+import com.example.note_service.Dto.NoteEvent;
 import com.example.note_service.client.UserClient;
 import com.example.note_service.entity.Note;
 import com.example.note_service.entity.Tag;
@@ -8,26 +9,33 @@ import com.example.note_service.repository.TagRepository;
 import com.example.note_service.service.NoteService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class NoteServiceImpl implements NoteService {
     private final NoteRepository noteRepository;
     private final TagRepository tagRepository;
     private final UserClient userClient;
+    private final KafkaTemplate<String, NoteEvent> kafka;
 
-    public NoteServiceImpl(NoteRepository noteRepository, TagRepository tagRepository, UserClient userClient) {
+    public NoteServiceImpl(NoteRepository noteRepository, TagRepository tagRepository, UserClient userClient, KafkaTemplate<String, NoteEvent> kafka) {
         this.noteRepository = noteRepository;
         this.tagRepository = tagRepository;
         this.userClient = userClient;
+        this.kafka = kafka;
     }
 
     @Override
@@ -41,7 +49,16 @@ public class NoteServiceImpl implements NoteService {
                 .map(name -> tagRepository.findByName(name)
                         .orElseGet(() -> tagRepository.save(new Tag(name)))).collect(Collectors.toSet());
         note.setTags(tags);
-        return noteRepository.save(note);
+        Note savedNote = noteRepository.save(note);
+        NoteEvent event = new NoteEvent(
+                savedNote.getId(),
+                savedNote.getUserId(),
+                savedNote.getTitle(),
+                Instant.now()
+        );
+        kafka.send("note.events", savedNote.getId().toString(), event);
+        log.info("Published NoteEvent for create: {}", event);
+        return savedNote;
     }
     private Note userValidationFallback(Note note, Set<String> tagNames, Throwable t) {
         throw new ResponseStatusException(
@@ -90,7 +107,18 @@ public class NoteServiceImpl implements NoteService {
                         .orElseGet(() -> tagRepository.save(new Tag(name))))
                 .collect(Collectors.toSet());
         existingNote.setTags(tags);
-        return noteRepository.save(existingNote);
+        Note updated = noteRepository.save(existingNote);
+
+        // 发布事件
+        NoteEvent event = new NoteEvent(
+                updated.getId(),
+                updated.getUserId(),
+                updated.getTitle(),
+                Instant.now()
+        );
+        kafka.send("note.events", updated.getId().toString(), event);
+        log.info("Published NoteEvent for update: {}", event);
+        return updated;
     }
 
     @Override
