@@ -56,7 +56,7 @@ public class NoteServiceImpl implements NoteService {
                 savedNote.getTitle(),
                 Instant.now()
         );
-        kafka.send("note.events", savedNote.getId().toString(), event);
+        kafka.send("note-creation-event", savedNote.getId().toString(), event);
         log.info("Published NoteEvent for create: {}", event);
         return savedNote;
     }
